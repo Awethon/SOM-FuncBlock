@@ -1,13 +1,13 @@
 # SOM-FuncBlock
 Educational project for my university  
-It's useful for academic purposes only.
+It's useful for academic purposes only
 
 This repository contains a few implementations of SOM algorithm: 
 * Sequential SOM
 * SOM parallelized by vectors
 * SOM parallelized by features
 
-Algorithm was decomposed into functional blocks that are reuseable mini-algorithms.
+Algorithm was decomposed into functional blocks that are reuseable mini-algorithms
 
 Implemented SOM algorithm is composition of functional blocks:
 
