@@ -1,5 +1,5 @@
 # SOM-FuncBlock
-Educational project for my university
+Educational project for my university  
 It's useful for academic purposes only.
 
 This repository contains a few implementations of SOM algorithm: 
