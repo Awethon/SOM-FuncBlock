@@ -2,10 +2,10 @@
 Educational project for my university  
 It's useful for academic purposes only
 
-This repository contains a few implementations of SOM algorithm: 
-* Sequential SOM
-* SOM parallelized by vectors
-* SOM parallelized by features
+This repository contains a few implementations of Self-Organizing Map algorithm: 
+* Sequential
+* Parallelized by vectors
+* Parallelized by features
 
 Algorithm was decomposed into functional blocks that are reuseable mini-algorithms
 
@@ -13,7 +13,7 @@ Implemented SOM algorithm is composition of functional blocks:
 
 ![Image](https://i.imgur.com/rpMyUuj.png)
 
-This project depends on a library that is providing basic functional blocks and enviroment for running algorithms:
+This project depends on a library that provides basic functional blocks and enviroment for running algorithms:
 
 https://bitbucket.org/iiholod/dxelopes4students/src/model_as_sets/
 
