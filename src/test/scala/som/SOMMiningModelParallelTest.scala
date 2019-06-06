@@ -5,7 +5,7 @@ import org.eltech.ddm.clustering.{AggregationFunction, ClusteringMiningModel}
 import org.eltech.ddm.handlers.thread.{MultiThreadedExecutionEnvironment, ThreadSettings}
 import org.eltech.ddm.miningcore.algorithms.MiningAlgorithm
 import org.eltech.ddm.clustering.ClusteringMiningModel
-import org.eltech.ddm.handlers.ExecutionSettings
+import org.eltech.ddm.handlers.{ExecutionSettings, HandlerType}
 import org.eltech.ddm.handlers.thread.MultiThreadedExecutionEnvironment
 import org.eltech.ddm.handlers.thread.ThreadSettings
 import org.eltech.ddm.inputdata.DataSplitType
@@ -19,7 +19,7 @@ class SOMMiningModelParallelTest extends CDBaseModelTest {
   private val NUMBER_HANDLERS = 4
   val miningAlgorithmSettings: SOMAlgorithmSettings = new SOMAlgorithmSettings()
   miningAlgorithmSettings.setAlgorithm("SOM")
-  miningAlgorithmSettings.setMaxNumberOfIterations(200)
+  miningAlgorithmSettings.setMaxNumberOfIterations(50)
   miningAlgorithmSettings.setEps(0.01)
 
 
@@ -209,8 +209,13 @@ class SOMMiningModelParallelTest extends CDBaseModelTest {
     println(s"third: $thirdResults")
   }
 
-  "SOMMiningModel hor parallel" should "work correctly on Wine Dataset" ignore {
+  "SOMMiningModel hor parallel" should "work correctly on Wine Dataset" in {
     // Open data source and get metadata:
+
+    miningAlgorithmSettings.setDataSplitType(DataSplitType.block)
+    miningAlgorithmSettings.setDataProcessingStrategy(DataProcessingStrategy.SeparatedDataSet)
+    miningAlgorithmSettings.setModelProcessingStrategy(MiningModelProcessingStrategy.SeparatedMiningModel)
+    miningAlgorithmSettings.setNumberHandlers(NUMBER_HANDLERS)
 
     setInputData4Wine()
     setMiningSettings4Wine(miningAlgorithmSettings)
@@ -227,16 +232,116 @@ class SOMMiningModelParallelTest extends CDBaseModelTest {
     miningSettings.setAggregationFunction(AggregationFunction.euclidian)
     miningSettings.verify()
 
+    val executionSettings = new ThreadSettings
+    executionSettings.setNumberHandlers(NUMBER_HANDLERS)
+    executionSettings.setDataSet(inputData)
+    executionSettings.setSystemType(HandlerType.ThreadExecutionHandler)
+
+    val algorithm: MiningAlgorithm = new SelfOrganizingMapHorParallelAlgorithm()(miningSettings)
+    val environment = new MultiThreadedExecutionEnvironment(executionSettings, algorithm)
+    miningAlgorithmSettings.setEnvironment(environment)
+
+    val buildTask = new EMiningBuildTask
+    buildTask.setInputStream(inputData)
+    buildTask.setMiningAlgorithm(algorithm)
+    buildTask.setMiningSettings(miningSettings)
+    buildTask.setExecutionEnvironment(environment)
+    model = buildTask.execute.asInstanceOf[SOMMiningModel]
+    //    verifyModel4Iris(model)
+
+    val wine = (0 to 20279).foldLeft(Seq.empty[Int]) { (results, i) =>
+      val res = model.asInstanceOf[SOMMiningModel].getWinnerNeuronForVector(i).getIndexOfNeuron
+      res +: results
+    }
+
+    val results = wine.groupBy(i => i).mapValues(_.size)
+
+    println(s"Wine: $results")
+
+
+  }
+
+  "SOMMiningModel ver parallel" should "work correctly on Wine Dataset" in {
+    // Open data source and get metadata:
+
+    miningAlgorithmSettings.setDataSplitType(DataSplitType.block)
+    miningAlgorithmSettings.setDataProcessingStrategy(DataProcessingStrategy.SeparatedDataSet)
+    miningAlgorithmSettings.setModelProcessingStrategy(MiningModelProcessingStrategy.SeparatedMiningModel)
+    miningAlgorithmSettings.setNumberHandlers(NUMBER_HANDLERS)
+
+    setInputData4Wine()
+    setMiningSettings4Wine(miningAlgorithmSettings)
+
+    // Assign settings:
+    miningSettings.setMaxNumberOfClusters(2)
+    miningSettings.setNeighbours(0, Array(1))
+    miningSettings.setNeighbours(1, Array(0))
+//    miningSettings.setNeighbours(2, Array(1, 3))
+//    miningSettings.setNeighbours(3, Array(2))
+//    miningSettings.setNeighbours(4, Array(3, 5))
+//    miningSettings.setNeighbours(5, Array(4, 6))
+//    miningSettings.setNeighbours(6, Array(5))
+    miningSettings.setAggregationFunction(AggregationFunction.euclidian)
+    miningSettings.verify()
+
+    val executionSettings = new ThreadSettings
+    executionSettings.setNumberHandlers(NUMBER_HANDLERS)
+    executionSettings.setDataSet(inputData)
+    executionSettings.setSystemType(HandlerType.ThreadExecutionHandler)
+
+    val algorithm: MiningAlgorithm = new SelfOrganizingMapVerParallelAlgorithm()(miningSettings)
+    val environment = new MultiThreadedExecutionEnvironment(executionSettings, algorithm)
+    miningAlgorithmSettings.setEnvironment(environment)
+
+    val buildTask = new EMiningBuildTask
+    buildTask.setInputStream(inputData)
+    buildTask.setMiningAlgorithm(algorithm)
+    buildTask.setMiningSettings(miningSettings)
+    buildTask.setExecutionEnvironment(environment)
+    model = buildTask.execute.asInstanceOf[SOMMiningModel]
+    //    verifyModel4Iris(model)
+
+    val wine = (0 to 20279).foldLeft(Seq.empty[Int]) { (results, i) =>
+      val res = model.asInstanceOf[SOMMiningModel].getWinnerNeuronForVector(i).getIndexOfNeuron
+      res +: results
+    }
+
+    val results = wine.groupBy(i => i).mapValues(_.size)
+
+    println(s"Wine: $results")
+
+
+  }
+
+  "SOMMiningModel bad ver parallel" should "work correctly on Wine Dataset" in {
+    // Open data source and get metadata:
+
     miningAlgorithmSettings.setDataSplitType(DataSplitType.block)
     miningAlgorithmSettings.setDataProcessingStrategy(DataProcessingStrategy.SingleDataSet)
     miningAlgorithmSettings.setModelProcessingStrategy(MiningModelProcessingStrategy.SingleMiningModel)
     miningAlgorithmSettings.setNumberHandlers(NUMBER_HANDLERS)
 
+    setInputData4Wine()
+    setMiningSettings4Wine(miningAlgorithmSettings)
+
+    // Assign settings:
+    miningSettings.setMaxNumberOfClusters(7)
+    miningSettings.setNeighbours(0, Array(1))
+    miningSettings.setNeighbours(1, Array(0, 2))
+    miningSettings.setNeighbours(2, Array(1, 3))
+    miningSettings.setNeighbours(3, Array(2, 4))
+    miningSettings.setNeighbours(4, Array(3, 5))
+    miningSettings.setNeighbours(5, Array(4, 6))
+    miningSettings.setNeighbours(6, Array(5))
+    miningSettings.setAggregationFunction(AggregationFunction.euclidian)
+    miningSettings.verify()
+
     val executionSettings = new ThreadSettings
     executionSettings.setNumberHandlers(NUMBER_HANDLERS)
     executionSettings.setDataSet(inputData)
+    executionSettings.setSystemType(HandlerType.ThreadExecutionHandler)
 
-    val algorithm: MiningAlgorithm = new SelfOrganizingMapVerParallelAlgorithm()(miningSettings)
+    val algorithm: MiningAlgorithm = new SelfOrganizingMapBadVerParallelAlgorithm()(miningSettings)
     val environment = new MultiThreadedExecutionEnvironment(executionSettings, algorithm)
     miningAlgorithmSettings.setEnvironment(environment)
 

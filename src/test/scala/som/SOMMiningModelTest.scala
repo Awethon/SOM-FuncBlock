@@ -10,7 +10,7 @@ import org.eltech.ddm.miningcore.algorithms.MiningAlgorithm
 class SOMMiningModelTest extends CDBaseModelTest {
   val miningAlgorithmSettings: SOMAlgorithmSettings = new SOMAlgorithmSettings()
   miningAlgorithmSettings.setAlgorithm("SOM")
-  miningAlgorithmSettings.setMaxNumberOfIterations(100)
+  miningAlgorithmSettings.setMaxNumberOfIterations(50)
   miningAlgorithmSettings.setEps(0.01)
 
   "SOMMiningModel" should "work correctly on Iris Dataset" in {

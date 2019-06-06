@@ -7,7 +7,7 @@ import org.eltech.ddm.miningcore.algorithms.{BlockExecuteTimingListner, MiningAl
 import org.eltech.ddm.miningcore.miningmodel.EMiningModel
 import org.eltech.ddm.miningcore.miningmodel.EMiningModel.INDEX_ATTRIBUTE_SET
 import som.steps._
-import wrapper.{MiningLoopElement, MiningLoopVectors}
+import wrapper.{MiningLoopElement, MiningLoopVectors, MiningParallel, MiningSequence}
 
 class SelfOrganizingMapVerParallelAlgorithm(implicit miningSettings: SOMFunctionSettings) extends MiningAlgorithm(miningSettings) {
 
@@ -35,7 +35,12 @@ class SelfOrganizingMapVerParallelAlgorithm(implicit miningSettings: SOMFunction
             MiningLoopElement(INDEX_ATTRIBUTE_SET)(
               MiningLoopVectors(AdjustNeuronWeights())
             )
-          )
+          ), new MiningBlock(miningSettings) {
+            override def execute(model: EMiningModel): EMiningModel = {
+              model.asInstanceOf[SOMMiningModel].getNeuronSet().setChanged(true)
+              model
+            }
+          }
         )
       )
 

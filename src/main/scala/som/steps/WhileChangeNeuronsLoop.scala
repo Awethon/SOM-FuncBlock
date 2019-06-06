@@ -26,6 +26,7 @@ class WhileChangeNeuronsLoop(blocks: MiningBlock*)
   override protected def afterIteration(model: EMiningModel): EMiningModel = {
     val cs = model.asInstanceOf[ClusteringMiningModel].getClusterSet
     cs.incNumberOfIterations()
+    println(cs.getNumberOfIterations)
     model
   }
 

@@ -3,11 +3,11 @@ package som
 
 import org.eltech.ddm.clustering.ClusteringMiningModel.{INDEX_CLUSTERS => INDEX_NEURONS}
 import org.eltech.ddm.inputdata.MiningInputStream
-import org.eltech.ddm.miningcore.algorithms.{BlockExecuteTimingListner, MiningAlgorithm}
+import org.eltech.ddm.miningcore.algorithms.{BlockExecuteTimingListner, MiningAlgorithm, MiningBlock}
 import org.eltech.ddm.miningcore.miningmodel.EMiningModel
 import org.eltech.ddm.miningcore.miningmodel.EMiningModel.INDEX_ATTRIBUTE_SET
 import som.steps._
-import wrapper.{MiningLoopElement, MiningLoopVectors}
+import wrapper.{MiningLoopElement, MiningLoopVectors, MiningParallel, MiningSequence}
 
 class SelfOrganizingMapBadVerParallelAlgorithm(implicit miningSettings: SOMFunctionSettings) extends MiningAlgorithm(miningSettings) {
 
@@ -18,18 +18,18 @@ class SelfOrganizingMapBadVerParallelAlgorithm(implicit miningSettings: SOMFunct
           MiningLoopElement(INDEX_ATTRIBUTE_SET)(InitNeuronByRandom())
         ),
         WhileChangeNeuronsLoop(
-            MiningLoopVectors(
-              MiningLoopElement(INDEX_NEURONS)(
-                MiningParallel(
-                  MiningLoopElement(INDEX_ATTRIBUTE_SET)(AccumulateDistanceFromVectorToNeuron())
-                ),
-                CalculateDistanceFromVectorToNeuron(),
-              ),
-              MiningLoopElement(INDEX_NEURONS)(ChooseWinnerNeuron()),
+          MiningLoopVectors(
+            MiningLoopElement(INDEX_NEURONS)(
               MiningParallel(
-                MiningLoopElement(INDEX_ATTRIBUTE_SET)(AdjustNeuronWeights())
-              )
+                MiningLoopElement(INDEX_ATTRIBUTE_SET)(AccumulateDistanceFromVectorToNeuron())
+              ),
+              CalculateDistanceFromVectorToNeuron(),
+            ),
+            MiningLoopElement(INDEX_NEURONS)(ChooseWinnerNeuron()),
+            MiningParallel(
+              MiningLoopElement(INDEX_ATTRIBUTE_SET)(AdjustNeuronWeights())
             )
+          )
         )
       )
 
